@@ -9,13 +9,9 @@ data = ''
 for i in range(n):
 	d_size = int(size[0] + np.around(size[0]*np.random.rand()))
 	d = ''
-	for j in range(d_size):
-		if np.random.rand() > 0.5:
-			if np.random.rand()+np.random.normal(0, 0.035) < target: d += '1'
-			else: d += '0'
-		else:
-			if np.random.rand()+np.random.normal(0, 0.035) > target: d += '0'
-			else: d += '1'
+	for j in range(d_size):	
+		if np.random.rand()+np.random.normal(0, 0.035) < target: d += '1'
+		else: d += '0'
 	d += '\n'
 	data += d
 

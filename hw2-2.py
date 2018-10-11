@@ -11,8 +11,8 @@ with open(file_name, 'r') as file:
 		if line[-1] == '\n': line = line[:-1]
 		data.append(line)
 
-a = 60 #int(input('Input a: '))
-b = 40 #int(input('Input b: '))
+a = 6 #int(input('Input a: '))
+b = 14 #int(input('Input b: '))
 
 def C(N, M):
 	total = 0
@@ -58,7 +58,7 @@ for i, line in enumerate(data):
 	lbl = (i+1, np.around(MLE, decimals=2), np.around(X[np.argmax(Y)], decimals=2))
 	marginal = (1 / nb_points * sum(Y))
 
-	print('Binomial Likelihood: %.4f, Beta Prior: %.4f, Posterior: %.4f ' % (Binomial(MLE, N, m, a, b), Beta(MLE, a, b), np.max(Y)/marginal/100))
+	print('MLE: %.4f, Binomial Likelihood: %.4f, Beta Prior: %.4f, Posterior: %.4f ' % (MLE, Binomial(MLE, N, m, a, b), Beta(MLE, a, b), np.max(Y)/marginal/100))
 	plt.plot(X, Y/marginal/100, color=color, label=lbl)
 	plt.legend(loc='upper left')
 	plt.show()
