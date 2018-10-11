@@ -1,8 +1,8 @@
 import numpy as np
 
-n = 12
-size = (30, 70)
-target = 0.7
+n = 20
+size = (100, 160)
+target = 0.9
 file_name = '2-2_data.txt'
 data = ''
 
