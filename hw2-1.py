@@ -7,7 +7,6 @@ class NaiveBayes:
 		self.mode = mode
 		self.smooth = 3900 if mode == 'continuous' else 1e-4
 		
-		
 
 	def fit(self, X, Y):
 		if self.mode == 'continuous': self.X, self.Y = X.copy(), Y.flatten()
@@ -18,8 +17,7 @@ class NaiveBayes:
 		self.prior = np.bincount( self.Y ) / self.Y.shape[0]
 		self.bincount = np.bincount( self.Y )
 		if self.mode != 'continuous': self.freq = self._tally_frequency()
-		
-		print('Fit done.')
+		print('Fit done.\n')
 
 	def _get_mu_and_var(self):
 		mu = np.zeros(shape=(self.n_classes, self.n_features))
@@ -56,7 +54,7 @@ class NaiveBayes:
 		return log_likelihood			
 
 	def plot(self):
-
+		if not hasattr(self, 'errors'): return False
 		fig, axes = plt.subplots(4, 5)
 		for i in range(2):
 			for j in range(5):
@@ -77,29 +75,37 @@ class NaiveBayes:
 		plt.show()
 
 	def score(self, X, Y):
-		predict = self.predict(X)
+		predict, _ = self.predict(X)
 		right = 1
 		self.errors = np.zeros(shape=(self.n_classes, self.n_classes+3), dtype=np.float16)
 		for p, y in zip(predict, Y.flatten()): 
 			if p == y : right += 1
 			else: self.errors[y][p] += 1
-		#print(self.errors[:, :-2])
-		#print(np.sum(self.errors[:, :-2], axis=1))
 		self.errors[:, -1] = np.sum(self.errors[:, :-3], axis=1) / np.bincount(Y.flatten())
 		self.errors[:, -2] = np.bincount(Y.flatten())
 		self.errors[:, -3] = np.sum(self.errors[:, :-3], axis=1)
-		#for c in range(self.n_classes): self.errors[c][-1] = np.sum(self.errors[c, :-1])/np.bincount(Y)[c]
 		total = Y.flatten().shape[0]
 		wrong = total - right
 		return right/total, wrong/total, self.errors
 
 	def predict(self, X):
-		ans = []
-		for x in X: 
-			if self.mode == 'continuous': log_likelihood = self._get_log_likelihood(x)
-			else : log_likelihood = self._get_log_likelihood_discrete(x)
-			ans.append(np.argmax(np.log(self.prior) + log_likelihood))
-		return np.array(ans)
+		if len(X.shape) == 2:
+			total_number = X.shape[0]
+			ans, unmarginalize_log_posterior = [], []
+			for i, x in enumerate(X): 
+				print('\rValidation Progess: %05d/%05d (%5.2f%%)' % ((i+1), total_number, (i+1)/total_number*100) , end='')
+				if self.mode == 'continuous': log_likelihood = self._get_log_likelihood(x)
+				else : log_likelihood = self._get_log_likelihood_discrete(x)
+				unmarginalize_log_posterior.append(np.log(self.prior) + log_likelihood)
+				ans.append(np.argmax(unmarginalize_log_posterior[-1]))
+			print('\n')
+			return np.array(ans), unmarginalize_log_posterior
+		else:
+			if self.mode == 'continuous': log_likelihood = self._get_log_likelihood(X)
+			else : log_likelihood = self._get_log_likelihood_discrete(X)
+			unmarginalize_log_posterior = np.log(self.prior) + log_likelihood
+			ans = np.argmax(unmarginalize_log_posterior)
+			return ans, unmarginalize_log_posterior
 
 
 
@@ -107,12 +113,25 @@ def main(mode='continuous'):
 	train_X, train_Y, test_X, test_Y = load_mnist()
 	a = NaiveBayes(mode=mode)
 	a.fit(train_X, train_Y)
+
 	right, wrong, errors = a.score(test_X, test_Y)
 	print('Error Rate:', wrong)
-	print('Error Rate (number-wise)', errors[:, -1])
-	print(errors[:, :-1].astype(np.uint32))
-	a.plot()
+	print('Error Rate (number-wise)', list(errors[:, -1]))
+	print(errors[:, :-1].astype(np.uint32), end='\n\n')
+	
+	print('\n')
+	range_ = [1024, 1026]
+	ans, unmarginalize_log_posterior = a.predict(test_X[range_[0]: range_[1]])
+	print('='*120)
+	for i, (s, post) in enumerate(zip(ans, unmarginalize_log_posterior)):
+		print('\nValidation data no.%d | predict = %d, label = %d' % (range_[0]+i, s, test_Y[range_[0]+i][0]) , end='\n\n')
+		print('Unmarginalize log posterior:')
+		print(list(np.around(post, decimals=3)), end='\n\n')
+		print('='*120, end='\n\n')
 
+	a.plot()
+	
+	
 
 	
 
@@ -139,9 +158,9 @@ if __name__ == '__main__':
 	args.mode = int(args.mode)
 
 	if args.mode == 0: 
-		print('Discrete Mode.')
+		print('\n[ Discrete Mode ]\n')
 		main('discrete')
 	else: 
-		print('Continuous Mode.')
+		print('\n[ Continuous Mode ]\n')
 		main('continuous')
 
