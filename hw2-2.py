@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
+
+a = 120 #int(input('Input a: '))
+b = 580 #int(input('Input b: '))
+
 file_name = '2-2_data.txt'
 nb_points = 500
 sys.setrecursionlimit(50000)
@@ -13,13 +17,10 @@ with open(file_name, 'r') as file:
 		if line[-1] == '\n': line = line[:-1]
 		data.append(line)
 
-a = 132 #int(input('Input a: '))
-b = 134 #int(input('Input b: '))
-
 r_table = [None, None, 0]
 
-
 dummy = 1e-10
+
 
 def C(N, M):
 	total = log_r(N+1) - log_r(M+1) - log_r(N-M+1)
@@ -49,32 +50,31 @@ plt.ion()
 X = np.linspace(0, 1, num=nb_points)
 
 for i, line in enumerate(data):
-
 	
 
 	N = line.count('0') + line.count('1')
 	m = line.count('1')
 	
-	Y = [conjugate(x, N, m, a, b) for x in X]
-
 	MLE = a/(a+b)
 	
+	Y = [conjugate(x, N, m, a, b) for x in X]
+	
 	color = [0.55, 0.6 + 0.4/len(data)*(i+1), 0.6 + 0.4/len(data)*(i+1)]
+	
 	marginal = (1 / nb_points * sum(Y))
 
 	BinomialLikelihood = 10 ** Binomial(MLE, N, m, a, b)
 	BetaPrior = 10 ** Beta(MLE, a, b)
 	lbl =  '%02d, likelihood: %.4f, prior: %.4f, posterior: %.4f' % (i+1, BinomialLikelihood, BetaPrior, np.max(Y)/marginal) #(i+1, np.around(MLE, decimals=2), np.around(X[np.argmax(Y)], decimals=2))
-
-	print('%03d | Binomial Likelihood: %.4f, Beta Prior: %.8f, Posterior: %.4f ' % ( i+1, BinomialLikelihood, BetaPrior, np.max(Y)/marginal))
+	print('%03d | Binomial Likelihood: %.8f, Beta Prior: %.8f, Posterior: %.4f ' % ( i+1, BinomialLikelihood, BetaPrior, np.max(Y)/marginal))
 
 	a += m
 	b += N-m
 
 	x_, y_ = (X[np.argmax(Y)], np.max(Y)/marginal)	
 	
-	plt.legend(loc='upper left', prop={'size': 6})
 	plt.plot(X, Y/marginal, color=color, label=lbl)
+	plt.legend(loc='upper left', prop={'size': 6})
 	plt.scatter(x_, y_, color=[1, 0.45, 0.48])
 	plt.text( x_, y_, '(%.4f, %.4f)'% (x_, y_), color=[1, 0.48, 0.45])
 	plt.show()

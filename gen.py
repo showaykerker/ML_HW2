@@ -1,8 +1,8 @@
 import numpy as np
 
 n = 25
-size = (10000, 16000)
-target = 0.25
+size = (100, 160)
+target = 0.5
 file_name = '2-2_data.txt'
 data = ''
 
