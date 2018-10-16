@@ -51,13 +51,15 @@ X = np.linspace(0, 1, num=nb_points)
 
 BetaPrior = None
 
+MLE = a/(a+b)
+
 for i, line in enumerate(data):
 	
 
 	N = line.count('0') + line.count('1')
 	m = line.count('1')
 	
-	MLE = a/(a+b)
+	
 	
 	BetaPrior = 10 ** Beta(MLE, a, b) if BetaPrior is None else np.max(Y)/marginal
 	Y = [conjugate(x, N, m, a, b) for x in X]
@@ -69,12 +71,12 @@ for i, line in enumerate(data):
 	
 
 	lbl =  '%02d, likelihood: %.4f, prior: %.4f, posterior: %.4f' % (i+1, BinomialLikelihood, BetaPrior, np.max(Y)/marginal) #(i+1, np.around(MLE, decimals=2), np.around(X[np.argmax(Y)], decimals=2))
-	print('%03d | Binomial Likelihood: %.8f, Beta Prior: %.8f, Posterior: %.4f ' % ( i+1, BinomialLikelihood, BetaPrior, np.max(Y)/marginal))
+	print('%03d | Binomial Likelihood: %.18f, Beta Prior: %.8f, Posterior: %.4f ' % ( i+1, BinomialLikelihood, BetaPrior, np.max(Y)/marginal))
 
 	a += m
 	b += N-m
 
-	x_, y_ = (X[np.argmax(Y)], np.max(Y)/marginal)	
+	x_, y_ = (X[np.argmax(Y)], np.max(Y)/marginal)
 	
 	plt.plot(X, Y/marginal, color=color, label=lbl)
 	plt.legend(loc='upper left', prop={'size': 6})
