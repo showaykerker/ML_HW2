@@ -49,6 +49,8 @@ plt.ion()
 
 X = np.linspace(0, 1, num=nb_points)
 
+BetaPrior = None
+
 for i, line in enumerate(data):
 	
 
@@ -57,14 +59,15 @@ for i, line in enumerate(data):
 	
 	MLE = a/(a+b)
 	
+	BetaPrior = 10 ** Beta(MLE, a, b) if BetaPrior is None else np.max(Y)/marginal
 	Y = [conjugate(x, N, m, a, b) for x in X]
 	
 	color = [0.55, 0.6 + 0.4/len(data)*(i+1), 0.6 + 0.4/len(data)*(i+1)]
 	
 	marginal = (1 / nb_points * sum(Y))
-
 	BinomialLikelihood = 10 ** Binomial(MLE, N, m, a, b)
-	BetaPrior = 10 ** Beta(MLE, a, b)
+	
+
 	lbl =  '%02d, likelihood: %.4f, prior: %.4f, posterior: %.4f' % (i+1, BinomialLikelihood, BetaPrior, np.max(Y)/marginal) #(i+1, np.around(MLE, decimals=2), np.around(X[np.argmax(Y)], decimals=2))
 	print('%03d | Binomial Likelihood: %.8f, Beta Prior: %.8f, Posterior: %.4f ' % ( i+1, BinomialLikelihood, BetaPrior, np.max(Y)/marginal))
 
